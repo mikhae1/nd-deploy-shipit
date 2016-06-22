@@ -1,0 +1,23 @@
+{
+  "name": "nd-deploy-shipit",
+  "version": "0.0.0",
+  "description": "Simple deploy scripts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^1.1.0",
+    "inquirer": "^0.9.0",
+    "moment": "^2.11.1",
+    "nd-seq": "git+ssh://git@github.com:noodoo/nd-seq.git#v2",
+    "nd-utils": "git+ssh://git@github.com/noodoo/nd-utils.git",
+    "octonode": "^0.7.1",
+    "open": "0.0.5",
+    "shipit-cli": "^1.4.1",
+    "ssh-pool": "^1.3.0",
+    "yargs": "^3.19.0"
+  }
+}
