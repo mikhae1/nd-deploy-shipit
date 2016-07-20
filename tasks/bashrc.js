@@ -65,8 +65,10 @@ var filesToCopy = [{
   src: '~/bashrc/.vimrc',
   dst: '~/.vimrc'
 }, {
-  src: '~/.vim/colors/monokai.vim',
-  dst: '~/.vim/colors/monokai.vim'
+  src: '~/.vim',
+  dst: '~/',
+  backupSrc: '~/.vim',
+  backupDst: '~/.vim.old'
 }, {
   src: '~/.git-prompt.sh',
   dst: '~/.git-prompt.sh'
@@ -190,7 +192,11 @@ module.exports = function(shipit) {
       servers.forEach(function(srv) {
         var dst = srv.split('@')[1];
         filesToCopy.forEach(function(f){
-          tasks.push(shipit.remoteFactory('cp -r ' + f.dst + ' ' + f.dst + '.old || true', 'backuping ' + f.dst));
+          var bsrc = f.backupSrc || f.dst;
+          var bdst = f.backupDst || (f.backupTo || f.dst + '.old');
+          if (f.dst.slice(-1) === '/') bdst = f.dst.slice(0, -1) + '.old';
+
+          tasks.push(shipit.remoteFactory('cp -r ' +  bsrc + ' ' + bdst + ' || true', 'backuping ' + f.dst));
           tasks.push(shipit.localFactory('scp -r ' + f.src + ' ' + dstUser + '@' + dst + ':' + f.dst));
         });
       });
