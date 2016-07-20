@@ -193,10 +193,9 @@ module.exports = function(shipit) {
         var dst = srv.split('@')[1];
         filesToCopy.forEach(function(f){
           var bsrc = f.backupSrc || f.dst;
-          var bdst = f.backupDst || (f.backupTo || f.dst + '.old');
-          if (f.dst.slice(-1) === '/') bdst = f.dst.slice(0, -1) + '.old';
+          var bdst = f.backupDst || (f.dst.slice(-1) === '/' ? (f.dst.slice(0, -1) + '.old') : (f.dst + '.old'));
 
-          tasks.push(shipit.remoteFactory('cp -r ' +  bsrc + ' ' + bdst + ' || true', 'backuping ' + f.dst));
+          tasks.push(shipit.remoteFactory('cp -r ' +  bsrc + ' ' + bdst + ' || true', 'backuping ' + bdst));
           tasks.push(shipit.localFactory('scp -r ' + f.src + ' ' + dstUser + '@' + dst + ':' + f.dst));
         });
       });
