@@ -155,8 +155,8 @@ module.exports = function(shipit) {
 
           function gitFetch(cb) {
             shipit.log('> Fetching updates: ');
-            shipit.remote('cd ' + target.path +
-              ' && git fetch', cb
+            shipit.remote('cd ' + target.path + ' && ' +
+              ' git remote prune origin && git fetch', cb
             );
           }
 
