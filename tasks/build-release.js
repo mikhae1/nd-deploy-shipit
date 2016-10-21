@@ -42,8 +42,8 @@ module.exports = function(shipit) {
       .argv;
 
     seq(
-      //gitReset,
-      //gitUpdate,
+      gitReset,
+      gitUpdate,
       parseVersion,
       updatePackageJson,
       updateChangelog,
