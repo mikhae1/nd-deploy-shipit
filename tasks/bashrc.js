@@ -12,11 +12,14 @@ var fs = require('fs');
 var tpl = [
   '# Source global definitions',
   'if [ -f /etc/bashrc ]; then',
-  '    . /etc/bashrc',
+  '  . /etc/bashrc',
   'fi',
   '# Prompt',
   'source ~/.git-prompt.sh',
   'PS1=\'{{prompt}} \'',
+  '# Make git completions work on "g":',
+  'source /etc/bash_completion.d/git',
+  '__git_complete g __git_main',
   '# Vars',
   'export ndir="{{ndir}}"',
   'export nduser="{{nduser}}"',
@@ -30,13 +33,10 @@ var tpl = [
   'alias ndqlog="tail -n200 -f $ndqlog"',
   'alias ndreload="{{ndreload}} && sleep 1 && ndlog"',
   'alias ndchdir="{{ndchdir}}"',
-  '# Alias for git completions to work on "g":',
-  'source /etc/bash_completion.d/git',
-  '__git_complete g __git_main',
   '# User specific functions',
   'if [[ $- =~ "i" ]]',
   'then',
-  '    cd $ndir && git status -sb && git log -1',
+  '  cd $ndir && git status -sb && git log -1',
   'fi'
 ].join('\n');
 
@@ -78,7 +78,7 @@ module.exports = function(shipit) {
   shipit.task('bashrc', function(taskCallback) {
     require('./init')(shipit);
     var out = tpl;
-    var config = shipit.config.remote;
+    var config = shipit.config.remote || {};
 
     argv = require('yargs')
       .usage('Usage: $0 bashrc [-f [dev|test|prod]]')
@@ -109,19 +109,20 @@ module.exports = function(shipit) {
           out = out.replace('{{prompt}}', prompts.staging);
         } else {
           shipit.log('Can\'t detect bashrc server enviroment');
+          out = out.replace('{{prompt}}', prompts.prod);
           // TODO:
           // inquirer.prompt([{
           //   type: 'input',
           //   message: 'Enter enviroment type: dev, test, prod?',
           //   name: 'confirm'
           // }], function(ans) {
-          return taskCallback('unknown_env');
+          //return taskCallback('unknown_env');
         }
       }
 
       if (config.path) {
         out = out.replace('{{ndir}}', config.path);
-      } else if (config.targets.noodoo) {
+      } else if (config.targets && config.targets.noodoo) {
         out = out.replace('{{ndir}}', config.targets.noodoo.path);
       } else if (config.targets) {
         // FIXME: add a menu
@@ -161,7 +162,6 @@ module.exports = function(shipit) {
         shipit.log(dstFile + ' is saved');
         cb(null);
       });
-
     }
 
     function confirmUpload(cb) {

@@ -94,12 +94,14 @@ module.exports = function(shipit) {
           var runNpmInstall = false;
           var runEditConfig = false;
           var runReindex = false;
+          var runFXMigrations = false;
 
           seq(
             checkBranch,
             resetDir,
             gitFetch,
             checkMigrations,
+            checkFXMigrations,
             checkPackageJson,
             checkConfigSample,
             checkIndexes,
@@ -159,7 +161,7 @@ module.exports = function(shipit) {
           }
 
           function checkMigrations(cb) {
-            shipit.log('> Checking the migrations: ');
+            shipit.log('> Checking db migrations: ');
             var configName = 'config.json';
             var re = /(migrations\/.*\.(sql|js))/ig;
 
@@ -214,6 +216,41 @@ module.exports = function(shipit) {
 
                     return cb(null);
                   });
+              });
+          }
+
+          function checkFXMigrations(cb) {
+            shipit.log('> Checking fx migrations: ');
+            var re = /(migrations\/flexible\/.*\.xml)/ig;
+
+            shipit.mute();
+            shipit.remote('cd ' + target.path +
+              ' && git diff --name-only origin/' + target.branch,
+              function(err, res) {
+                shipit.unmute();
+
+                if (err) return cb(err);
+
+                if (!re.test(res[0].stdout)) {
+                  shipit.log(chalk.dim('No fx migrations are found'));
+                  return cb(null);
+                }
+
+                shipit.log(chalk.bgYellow('FX migrations are found: ' + res[0].stdout.match(re).length + ' new'));
+                runFXMigrations = true;
+
+                var arr;
+                var migrations = [];
+                while ((arr = re.exec(res[0].stdout)) !== null) {
+                  migrations.push(arr[0]);
+                }
+
+                for (var i = 0; i < migrations.length; i++) {
+                  shipit.log('%s. %s', i + 1, migrations[i]);
+                }
+
+
+                cb(null);
               });
           }
 
@@ -319,7 +356,7 @@ module.exports = function(shipit) {
 
                 if (runMigrations) {
                   if (target.migrateTask) {
-                    shipit.log(chalk.bgRed('Run task migrate!'));
+                    shipit.log(chalk.bgRed('You should run task `migrate`!'));
                   } else {
                     shipit.log(chalk.bgRed('You should run the migrations!'));
                   }
@@ -327,6 +364,7 @@ module.exports = function(shipit) {
 
                 if (runEditConfig) shipit.log(chalk.bgRed('You should edit the config file!'));
                 if (runReindex) shipit.log(chalk.bgRed('You should rebuild Sphinx indexes'));
+                if (runFXMigrations) shipit.log(chalk.bgRed('You should run task `migrate_flexible`!'));
 
                 inquirer.prompt([{
                   type: 'confirm',
@@ -477,7 +515,7 @@ module.exports = function(shipit) {
               shipit.mute();
               shipit.remote('cd ' + target.path + ' && cat ./CHANGELOG.md', function(err, res) {
                 shipit.unmute();
-                
+
                 if (err) return next(err);
 
                 var data = res[0].stdout.trim();

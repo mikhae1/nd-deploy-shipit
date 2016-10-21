@@ -42,8 +42,8 @@ module.exports = function(shipit) {
       .argv;
 
     seq(
-      gitReset,
-      gitUpdate,
+      //gitReset,
+      //gitUpdate,
       parseVersion,
       updatePackageJson,
       updateChangelog,
@@ -127,7 +127,7 @@ module.exports = function(shipit) {
       if (url) {
         console.log('> inserting compare url...');
         url = url[0];
-        var prev = 'v' + data.match(/(\d+\.\d+\.\d+)/i)[0];
+        var prev = 'v' + data.match(/##\s(\d+\.\d+\.\d+)/i)[1];
         url = url + prev + '...' + 'v' + ver.toString();
       }
 
@@ -228,8 +228,8 @@ module.exports = function(shipit) {
     }
 
     function printDovReport(cb) {
-      dovReport = '<b>Собрана версия ' + ver.toString() + ' для ' +
-        path.basename(shipit.config.local.path) + ' и установлена на PROD.</b>\n';
+      dovReport = '<b>Собран релиз ' + ver.toString() + ' для ' +
+        path.basename(shipit.config.local.path) + ' и установлен на PROD.</b>\n';
 
       var file = path.join(shipit.config.local.path, 'CHANGELOG.md');
       var block = [];
@@ -246,7 +246,7 @@ module.exports = function(shipit) {
 
       rl.on('line', function(line) {
         // console.log(line);
-        // there is no documented way to close/shutdown/abort/destroy 
+        // there is no documented way to close/shutdown/abort/destroy
         // a generic Readable stream as of Node 5.3.0.
         if (count > 2) return;
 
